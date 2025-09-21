@@ -15,13 +15,13 @@ function sendEmail($to, $subject, $message)
         $mail->isSMTP();
         $mail->Host = 'mail.codeopia.dev'; // Your SMTP server
         $mail->SMTPAuth = true;
-        $mail->Username = 'no-reply@codeopia.dev'; // Your Gmail
-        $mail->Password = 'zzPve#8%sc7I$zpq';  // App password, not your real Gmail password
+        $mail->Username = ''; // Your Gmail
+        $mail->Password = '';  // App password, not your real Gmail password
         $mail->SMTPSecure = 'ssl';
-        $mail->Port = 465;
+        $mail->Port = 0;
 
         // Recipients
-        $mail->setFrom('no-reply@codeopia.dev', 'Taxshiled');
+        $mail->setFrom('', 'Taxshiled');
         $mail->addAddress($to); // Recipient email
 
         // Content
