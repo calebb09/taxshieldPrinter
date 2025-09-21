@@ -13,7 +13,7 @@ function sendEmail($to, $subject, $message)
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host = 'mail.codeopia.dev'; // Your SMTP server
+        $mail->Host = ''; // Your SMTP server
         $mail->SMTPAuth = true;
         $mail->Username = ''; // Your Gmail
         $mail->Password = '';  // App password, not your real Gmail password
