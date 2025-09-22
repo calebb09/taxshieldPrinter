@@ -1,6 +1,14 @@
 <?php
 // index.php
-
+// Always return JSON for uncaught exceptions
+set_exception_handler(function ($e) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'error' => $e->getMessage()
+    ]);
+    exit;
+});
 // Allow CORS
 // CORS headers - allow everything
 header("Access-Control-Allow-Origin: *");
