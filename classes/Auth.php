@@ -186,14 +186,22 @@ class Auth
     }
 
     /**
- * Return user record by id (public fields only)
- */
-    public function getUserById($id) {
+     * Return user record by id (public fields only)
+     */
+    public function getUserById($id)
+    {
         $stmt = $this->pdo->prepare("
             SELECT id, username, email, full_name, role, created_at
             FROM users WHERE id = :id LIMIT 1
         ");
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function anyUsersExist()
+    {
+        $stmt = $this->pdo->query("SELECT COUNT(*) as cnt FROM users");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['cnt'] > 0;
     }
 }

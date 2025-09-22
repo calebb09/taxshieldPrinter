@@ -92,7 +92,7 @@ if ($path === '/forgot-password' && $method === 'POST') {
 
     $debug = (!empty($_GET['debug']) && $_GET['debug'] == '1');
     $token = $res['token'];
-    $resetLink = 'http://yourdomain/taxshield/reset-password?token='.$token;
+    $resetLink = 'http://yourdomain/taxshield/reset-password?token=' . $token;
 
     if ($debug) {
         json([
@@ -188,20 +188,34 @@ if ($path === '/reset-password' && $method === 'POST') {
 // Get profile of the logged-in user
 if ($path === '/profile' && $method === 'GET') {
     $payload = getAuthPayload($auth);
-    if (!$payload) json(['error' => 'unauthorized'], 401);
+    if (!$payload)
+        json(['error' => 'unauthorized'], 401);
 
     // payload['sub'] should be the user id (from createJWT)
     $userId = (int) $payload['sub'];
 
     try {
         $user = $auth->getUserById($userId);
-        if (!$user) json(['error' => 'user not found'], 404);
+        if (!$user)
+            json(['error' => 'user not found'], 404);
 
         // hide any sensitive fields just in case (e.g. password_hash)
         unset($user['password_hash']);
         // unset($user['password']);
 
         json(['ok' => true, 'user' => $user]);
+    } catch (Exception $e) {
+        json(['error' => $e->getMessage()], 500);
+    }
+}
+
+if ($path === '/check_user_exist' && $method === "GET") {
+    try {
+        if ($auth->anyUsersExist()) {
+            json(['ok' => true, 'message' => 'At least one user exists']);
+        } else {
+            json(['ok' => false, 'message' => 'No users found']);
+        }
     } catch (Exception $e) {
         json(['error' => $e->getMessage()], 500);
     }

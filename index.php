@@ -1,10 +1,18 @@
 <?php
 // index.php
-
+// Always return JSON for uncaught exceptions
+set_exception_handler(function ($e) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'error' => $e->getMessage()
+    ]);
+    exit;
+});
 // Allow CORS
 // CORS headers - allow everything
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: *");
 
 // Handle preflight OPTIONS request
