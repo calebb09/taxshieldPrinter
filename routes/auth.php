@@ -29,7 +29,7 @@ if ($path === '/login' && $method === 'POST') {
     if (!$user)
         json(['error' => 'invalid credentials'], 401);
 
-    $token = $auth->createJWT($user['id'], $user['username'], $user['role'], 3600 * 8);
+    $token = $auth->createJWT($user['id'], $user['username'], $user['role'], 3600 * 8760);
     $audit->log($user['id'], 'login', 'login_success');
     json([
         'token' => $token,
