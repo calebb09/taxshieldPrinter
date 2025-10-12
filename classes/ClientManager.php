@@ -13,15 +13,21 @@ class ClientManager
     public function createClient($data, $createdBy = null)
     {
         $sql = "INSERT INTO clients
-          (name,email,mobile,address,payable_amount,branch_contacted_id,gender,dob,referral_source,payment_reason,ssn,fein,created_by)
-          VALUES (:name,:email,:mobile,:addr,:pay,:branch,:gender,:dob,:ref,:reason,:ssn,:fein,:created_by)";
+          (name,email,mobile,street_name, street_number, Apartment, city, state, ZIP_code, country ,payable_amount,branch_contacted_id,gender,dob,referral_source,payment_reason,ssn,fein,created_by)
+          VALUES (:name,:email,:mobile,:street_name,:street_number,:Apartment,:city,:state,:ZIP_code,:country,:payable_amount,:branch,:gender,:dob,:ref,:reason,:ssn,:fein,:created_by)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':name' => $data['name'] ?? '',
             ':email' => $data['email'] ?? null,
             ':mobile' => $data['mobile'] ?? null,
-            ':addr' => $data['address'] ?? null,
-            ':pay' => $data['payable_amount'] ?? 0,
+            ':street_name' => $data['street_name'] ?? null,
+            ':street_number' => $data['street_number'] ?? null,
+            ':Apartment' => $data['Apartment'] ?? null,
+            ':city' => $data['city'] ?? null,
+            ':state' => $data['state'] ?? null,
+            ':ZIP_code' => $data['ZIP_code'] ?? null,
+            ':country' => $data['country'] ?? null,
+            ':payable_amount' => $data['payable_amount'] ?? 0,
             ':branch' => $data['branch_contacted_id'] ?? null,
             ':gender' => $data['gender'] ?? 'other',
             ':dob' => !empty($data['dob']) ? $data['dob'] : null,
@@ -136,10 +142,10 @@ class ClientManager
         $total = $stmt->fetchColumn();
 
         // Data
-        $sql = "SELECT id, name, email, mobile, created_at 
-            FROM clients 
-            WHERE $whereSql 
-            ORDER BY $sort_by $sort_order 
+        $sql = "SELECT id, name, email, mobile, created_at
+            FROM clients
+            WHERE $whereSql
+            ORDER BY $sort_by $sort_order
             LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $k => $v) {
