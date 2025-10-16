@@ -13,11 +13,12 @@ class ClientManager
     public function createClient($data, $createdBy = null)
     {
         $sql = "INSERT INTO clients
-          (name,email,mobile,street_name, street_number, Apartment, city, state, ZIP_code, country ,payable_amount,branch_contacted_id,gender,dob,referral_source,payment_reason,ssn,fein,created_by)
-          VALUES (:name,:email,:mobile,:street_name,:street_number,:Apartment,:city,:state,:ZIP_code,:country,:payable_amount,:branch,:gender,:dob,:ref,:reason,:ssn,:fein,:created_by)";
+          (first_name,last_name,email,mobile,street_name, street_number, Apartment, city, state, ZIP_code, country ,payable_amount,branch_contacted_id,gender,dob,referral_source,payment_reason,ssn,fein,created_by)
+          VALUES (:first_name,:last_name,:email,:mobile,:street_name,:street_number,:Apartment,:city,:state,:ZIP_code,:country,:payable_amount,:branch,:gender,:dob,:ref,:reason,:ssn,:fein,:created_by)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':name' => $data['name'] ?? '',
+            ':first_name' => $data['first_name'] ?? '',
+            ':last_name' => $data['last_name'] ?? '',
             ':email' => $data['email'] ?? null,
             ':mobile' => $data['mobile'] ?? null,
             ':street_name' => $data['street_name'] ?? null,

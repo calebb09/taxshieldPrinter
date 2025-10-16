@@ -11,16 +11,16 @@ class CheckManager
     }
 
     // create and auto-generate a check number
-    public function createCheck($clientId, $amount, $companyAccount, $createdBy = null)
+    public function createCheck($clientId, $amount, $companyId, $createdBy = null)
     {
         $checkNumber = $this->generateCheckNumber();
-        $sql = "INSERT INTO checks (check_number, client_id, company_account_number, amount, created_by) 
+        $sql = "INSERT INTO checks (check_number, client_id, company_id, amount, created_by)
                 VALUES (:cn, :cid, :acc, :amt, :created_by)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':cn' => $checkNumber,
             ':cid' => $clientId,
-            ':acc' => $companyAccount,
+            ':acc' => $companyId,
             ':amt' => $amount,
             ':created_by' => $createdBy
         ]);
@@ -52,7 +52,7 @@ class CheckManager
 
     public function getTotalsAndRecent($sinceDays = 30)
     {
-        $sql = "SELECT 
+        $sql = "SELECT
             COUNT(*) as total_checks,
             SUM(amount) as total_amount,
             SUM(CASE WHEN status='Bounced' THEN 1 ELSE 0 END) as bounced_count
@@ -116,8 +116,8 @@ class CheckManager
         $total = (int) $countStmt->fetchColumn();
 
         // Get paginated + sorted data
-        $sql = "SELECT * FROM checks WHERE $whereSql 
-            ORDER BY $sort_by $sort_order 
+        $sql = "SELECT * FROM checks WHERE $whereSql
+            ORDER BY $sort_by $sort_order
             LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
 
@@ -138,10 +138,10 @@ class CheckManager
     public function getCheckById($user_id, $check_id)
     {
         $stmt = $this->pdo->prepare("
-        SELECT c.*, 
-               cl.id AS client_id, 
-               cl.name AS client_name, 
-               cl.email AS client_email, 
+        SELECT c.*,
+               cl.id AS client_id,
+               cl.name AS client_name,
+               cl.email AS client_email,
                cl.mobile AS client_phone
         FROM checks c
         JOIN clients cl ON c.client_id = cl.id

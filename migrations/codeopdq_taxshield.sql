@@ -77,11 +77,25 @@ CREATE TABLE `checks` (
   `id` int(11) NOT NULL,
   `check_number` varchar(100) NOT NULL,
   `client_id` int(11) NOT NULL,
-  `company_account_number` varchar(100) DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
   `amount` decimal(12,2) NOT NULL,
   `status` enum('Printed','Pending','Paid','Bounced') DEFAULT 'Pending',
   `printed_at` timestamp NULL DEFAULT NULL,
   `paid_at` timestamp NULL DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+--
+-- Table structure for table `company`
+--
+
+CREATE TABLE `company` (
+  `id` int(11) NOT NULL,
+  `logo` varchar(100) NOT NULL,
+  `address` text NOT NULL,
+  `phone` varchar(15) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `created_by` int(11) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
@@ -94,7 +108,8 @@ CREATE TABLE `checks` (
 
 CREATE TABLE `clients` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `first_name` varchar(255) NOT NULL,
+  `last_name` varchar(255) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `mobile` varchar(50) DEFAULT NULL,
   `address` text DEFAULT NULL,
@@ -180,6 +195,7 @@ ALTER TABLE `branches`
 --
 ALTER TABLE `checks`
   ADD PRIMARY KEY (`id`),
+  ADD KEY `company_id` (`company_id`),
   ADD KEY `client_id` (`client_id`),
   ADD KEY `created_by` (`created_by`);
 
