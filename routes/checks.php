@@ -118,24 +118,24 @@ if (preg_match('#^/checks/(\d+)$#', $path, $matches) && $method === 'GET') {
         json([
             'ok' => true,
             'check' => [
-                'id' => $check['id'],
+                'id' => (int) $check['id'],
                 'check_number' => $check['check_number'],
                 'client_id' => $check['client_id'],
                 'amount' => $check['amount'],
                 'status' => $check['status'],
                 'created_at' => $check['created_at'],
                 'company' => [
-                    'id' => $check['company_id'],
+                    'id' => (int) $check['company_id'],
                     'logo' => $check['company_logo'],
                     'address' => $check['company_address'],
                     'phone' => $check['company_phone'],
                     'email' => $check['company_email'],
                     'bank' => [
-                        'id' => $check['bank_id'],
+                        'id' => (int) $check['bank_id'],
                         'bank_name' => $check['bank_name'],
                         'logo' => $check['bank_logo'],
-                        'account' => $check['bank_account'],
-                        'routing' => $check['bank_routing']
+                        'account' => (int) $check['bank_account'],
+                        'routing' => (int) $check['bank_routing']
                     ]
                 ]
             ]
