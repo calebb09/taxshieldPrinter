@@ -29,6 +29,37 @@ class CheckManager
         return $id;
     }
 
+    public function getCheckByIdWithCompanyBank($userId, $checkId)
+    {
+        $sql = "
+        SELECT c.*, 
+               comp.id AS company_id,
+               comp.logo AS company_logo,
+               comp.address AS company_address,
+               comp.phone AS company_phone,
+               comp.email AS company_email,
+               b.id AS bank_id,
+               b.bank_name,
+               b.logo AS bank_logo,
+               b.bank_account,
+               b.bank_routing
+        FROM checks c
+        LEFT JOIN companies comp ON c.company_id = comp.id
+        LEFT JOIN banks b ON comp.bank_id = b.id
+        WHERE c.id = :checkId
+        AND c.created_by = :userId
+        LIMIT 1
+    ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':checkId' => $checkId,
+            ':userId' => $userId
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: false;
+    }
+
     public function generateCheckNumber()
     {
         // Example: COMPANY-YYYYMMDD-<random 6>

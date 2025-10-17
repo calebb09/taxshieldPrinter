@@ -27,6 +27,8 @@ require_once __DIR__ . '/classes/Auth.php';
 require_once __DIR__ . '/classes/AuditLog.php';
 require_once __DIR__ . '/classes/ClientManager.php';
 require_once __DIR__ . '/classes/CheckManager.php';
+require_once __DIR__ . '/classes/BankManager.php';
+require_once __DIR__ . '/classes/CompanyManager.php'; // For any composer packages
 require_once __DIR__ . '/classes/AuditLog.php'; // For any composer packages
 
 $config = require __DIR__ . '/config.php';
@@ -36,8 +38,11 @@ $dbInst = Database::getInstance($config);
 $pdo = $dbInst->pdo();
 $auth = new Auth($pdo, $config);
 $audit = new AuditLog($pdo);
-$clientMgr = new ClientManager($pdo, $audit);
+$banksMgr = new BankManager($pdo);
+$companyMgr = new CompanyManager($pdo);
 $checkMgr = new CheckManager($pdo, $audit);
+$clientMgr = new ClientManager($pdo, $audit);
+
 
 // ----------------- HELPERS -----------------
 function json($data, $status = 200)
@@ -71,9 +76,11 @@ if ($path === '')
     $path = '/';
 
 // ----------------- LOAD ROUTES -----------------
+require __DIR__ . '/routes/auditlogs.php';
 require __DIR__ . '/routes/auth.php';
+require __DIR__ . '/routes/banks.php';
 require __DIR__ . '/routes/clients.php';
 require __DIR__ . '/routes/checks.php';
+require __DIR__ . '/routes/company.php';
 require __DIR__ . '/routes/dashboard.php';
-require __DIR__ . '/routes/auditlogs.php';
 require __DIR__ . '/routes/notfound.php';

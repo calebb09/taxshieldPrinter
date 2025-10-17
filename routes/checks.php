@@ -15,7 +15,7 @@ if ($path === '/checks' && $method === 'POST') {
     $id = $checkMgr->createCheck(
         $data['client_id'],
         $data['amount'],
-        $data['company_account'] ?? null,
+        $data['company_id'] ?? null,
         $payload['sub']
     );
 
@@ -109,7 +109,7 @@ if (preg_match('#^/checks/(\d+)$#', $path, $matches) && $method === 'GET') {
     $check_id = (int) $matches[1];
 
     try {
-        $check = $checkMgr->getCheckById($payload['sub'], $check_id);
+        $check = $checkMgr->getCheckByIdWithCompanyBank($payload['sub'], $check_id);
 
         if (!$check) {
             json(['error' => 'Check not found'], 404);
@@ -117,7 +117,28 @@ if (preg_match('#^/checks/(\d+)$#', $path, $matches) && $method === 'GET') {
 
         json([
             'ok' => true,
-            'check' => $check
+            'check' => [
+                'id' => $check['id'],
+                'check_number' => $check['check_number'],
+                'client_id' => $check['client_id'],
+                'amount' => $check['amount'],
+                'status' => $check['status'],
+                'created_at' => $check['created_at'],
+                'company' => [
+                    'id' => $check['company_id'],
+                    'logo' => $check['company_logo'],
+                    'address' => $check['company_address'],
+                    'phone' => $check['company_phone'],
+                    'email' => $check['company_email'],
+                    'bank' => [
+                        'id' => $check['bank_id'],
+                        'bank_name' => $check['bank_name'],
+                        'logo' => $check['bank_logo'],
+                        'account' => $check['bank_account'],
+                        'routing' => $check['bank_routing']
+                    ]
+                ]
+            ]
         ]);
     } catch (Exception $e) {
         json(['error' => $e->getMessage()], 400);
