@@ -120,8 +120,8 @@ if (preg_match('#^/checks/(\d+)$#', $path, $matches) && $method === 'GET') {
             'check' => [
                 'id' => (int) $check['id'],
                 'check_number' => $check['check_number'],
-                'client_id' => $check['client_id'],
-                'amount' => $check['amount'],
+                'client_id' => (int) $check['client_id'],
+                'amount' => (float) $check['amount'],
                 'status' => $check['status'],
                 'created_at' => $check['created_at'],
                 'company' => [

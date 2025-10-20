@@ -63,7 +63,15 @@ class CheckManager
     public function generateCheckNumber()
     {
         // Example: COMPANY-YYYYMMDD-<random 6>
-        return 'TS-' . date('Ymd') . '-' . substr(bin2hex(random_bytes(3)), 0, 6);
+        // return 'TS-' . date('Ymd') . '-' . substr(bin2hex(random_bytes(3)), 0, 6);
+        // Generate random number between 0 and 9999
+        $randomNumber = random_int(0, 9999);
+
+        // Pad with leading zeros to always have 4 digits
+        $formattedNumber = str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
+
+        // Combine with prefix
+        return '00' . $formattedNumber;
     }
 
     public function updateStatus($checkId, $status, $byUser = null)
