@@ -80,8 +80,10 @@ class ClientManager
             $where[] = 'branch_id = :branch';
             $params[':branch'] = $filters['branch'];
         }
+
         if (isset($filters['name'])) {
-            $where[] = 'name LIKE :name';
+            // Search by either first_name or last_name
+            $where[] = '(first_name LIKE :name OR last_name LIKE :name)';
             $params[':name'] = '%' . $filters['name'] . '%';
         }
 
@@ -92,9 +94,22 @@ class ClientManager
         $stmt->execute($params);
         $total = $stmt->fetchColumn();
 
+        // Handle sort_by = name (sort by both first_name and last_name)
+        if ($sort_by === 'name') {
+            $sort_by = 'first_name, last_name';
+        }
+
         // Get data
         $stmt = $this->pdo->prepare("
-        SELECT *
+        SELECT 
+            id,
+            CONCAT(first_name, ' ', last_name) AS name,
+            email,
+            mobile,
+            city,
+            state,
+            country,
+            created_at
         FROM clients
         $whereSQL
         ORDER BY $sort_by $sort_order
@@ -113,6 +128,7 @@ class ClientManager
             'data' => $data
         ];
     }
+
 
 
     // 🔎 Search client by name
