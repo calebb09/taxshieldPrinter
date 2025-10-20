@@ -122,7 +122,7 @@ class ClientManager
         $params = [":uid" => $userId];
 
         if ($name) {
-            $where[] = "name LIKE :name";
+            $where[] = "first_name LIKE :name OR last_name LIKE :name";
             $params[":name"] = "%$name%";
         }
         if ($email) {
@@ -143,7 +143,7 @@ class ClientManager
         $total = $stmt->fetchColumn();
 
         // Data
-        $sql = "SELECT id, name, email, mobile, created_at
+        $sql = "SELECT id, CONCAT(first_name, ' ', last_name) AS name, email, mobile, created_at
             FROM clients
             WHERE $whereSql
             ORDER BY $sort_by $sort_order
