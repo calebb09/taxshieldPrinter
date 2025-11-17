@@ -132,3 +132,47 @@ if ($path === '/clients/search' && $method === 'GET') {
         json(['error' => $e->getMessage()], 400);
     }
 }
+
+
+// ------------------------- UPdate Client --------------------------
+// Update client
+if (preg_match('#^/clients/(\d+)$#', $path, $m) && $method === 'PUT') {
+    $payload = getAuthPayload($auth);
+    if (!$payload) {
+        json(['error' => 'unauthorized'], 401);
+    }
+
+    $id = (int) $m[1];
+
+    // Read JSON body
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        json(['error' => 'invalid json'], 400);
+    }
+
+    try {
+        $updated = $clientMgr->updateClient($id, $input);
+        json(['ok' => true, 'updated' => $updated]);
+    } catch (Exception $e) {
+        json(['error' => $e->getMessage()], 400);
+    }
+}
+
+
+// -------------------------- DELETE CLIENT --------------------------
+// Delete client
+if (preg_match('#^/clients/(\d+)$#', $path, $m) && $method === 'DELETE') {
+    $payload = getAuthPayload($auth);
+    if (!$payload) {
+        json(['error' => 'unauthorized'], 401);
+    }
+
+    $id = (int) $m[1];
+
+    try {
+        $deleted = $clientMgr->deleteClient($id);
+        json(['ok' => true, 'deleted' => $deleted]);
+    } catch (Exception $e) {
+        json(['error' => $e->getMessage()], 400);
+    }
+}

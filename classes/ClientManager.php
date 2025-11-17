@@ -55,7 +55,7 @@ class ClientManager
         // Minimal update example - extend as needed
         $fields = [];
         $params = [':id' => $id];
-        foreach (['name', 'email', 'mobile', 'address', 'payable_amount', 'payment_reason', 'referral_source', 'gender', 'dob'] as $f) {
+        foreach (['first_name', 'last_name', 'email', 'mobile', 'address', 'street_number', 'Apartment', 'city', 'state', 'country', 'zip_code', 'ssn', 'fein', 'referral_source', 'gender', 'dob'] as $f) {
             if (isset($data[$f])) {
                 $fields[] = "$f = :$f";
                 $params[":$f"] = $data[$f];
@@ -181,4 +181,23 @@ class ClientManager
         ];
     }
 
+    public function deleteClient($id)
+    {
+        // 1. Check if this client has checks
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM checks WHERE client_id = :id");
+        $stmt->execute([':id' => $id]);
+        $hasChecks = $stmt->fetchColumn();
+
+        // 2. Delete checks only if they exist
+        if ($hasChecks > 0) {
+            $stmt = $this->pdo->prepare("DELETE FROM checks WHERE client_id = :id");
+            $stmt->execute([':id' => $id]);
+        }
+
+        // 3. Delete the client
+        $stmt = $this->pdo->prepare("DELETE FROM clients WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+
+        return $stmt->rowCount(); // 1 = deleted, 0 = not found
+    }
 }
