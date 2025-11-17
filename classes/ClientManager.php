@@ -108,6 +108,9 @@ class ClientManager
             mobile,
             city,
             state,
+            ssn,
+            fein,
+            payment_reason,
             country,
             created_at
         FROM clients
