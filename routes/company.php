@@ -32,11 +32,12 @@ if ($path === '/company' && $method === 'POST') {
 
     // $_POST contains text fields, $_FILES contains uploaded files
     $bankId = $_POST['bankId'] ?? null;
+    $companyTitle = $_POST['name'] ?? null;
     $address = $_POST['address'] ?? null;
     $phone = $_POST['phone'] ?? null;
     $email = $_POST['email'] ?? null;
 
-    if (empty($bankId) || empty($address) || empty($phone) || empty($email)) {
+    if (empty($bankId) || empty($address) || empty($phone) || empty($email) || empty($companyTitle)) {
         json(['error' => 'All fields are required'], 400);
     }
 
@@ -109,6 +110,7 @@ if ($path === '/company' && $method === 'POST') {
     $data = [
         'logo' => $logoPath,
         'bankId' => $bankId,
+        'name' => $companyTitle,
         'address' => $address,
         'phone' => $phone,
         'email' => $email
@@ -119,6 +121,99 @@ if ($path === '/company' && $method === 'POST') {
     json(['ok' => true, 'message' => 'company created', 'companyId' => $companyId, 'logo' => $logoPath]);
 }
 
+// UPDATE COMPANIES 
+// UPDATE /companies/{id}
+if (preg_match('#^/company/(\d+)$#', $path, $matches) && $method === 'POST') {
+
+    // Auth check
+    $payload = getAuthPayload($auth);
+    if (!$payload) {
+        json(['error' => 'unauthorized'], 401);
+    }
+
+    $companyId = (int) $matches[1];
+
+    // Fetch company to verify ownership
+    $company = $companyMgr->getById($companyId);
+    if (!$company || $company['created_by'] !== $payload['sub']) {
+        json(['error' => 'Company not found or unauthorized'], 404);
+    }
+
+    // Collect fields to update
+    $data = [];
+
+    if (!empty($_POST['name'])) {
+        $data['name'] = $_POST['name'];
+    }
+
+    if (!empty($_POST['address'])) {
+        $data['address'] = $_POST['address'];
+    }
+
+    if (!empty($_POST['phone'])) {
+        $data['phone'] = $_POST['phone'];
+    }
+
+    if (!empty($_POST['email'])) {
+        $data['email'] = $_POST['email'];
+    }
+
+    if (!empty($_POST['bankId'])) {
+        $data['bankId'] = (int) $_POST['bankId'];
+    }
+
+    /*
+     * ---------------------------------------
+     * OPTIONAL LOGO UPLOAD
+     * ---------------------------------------
+     */
+    if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+
+        $uploadDir = __DIR__ . '/../uploads/companies/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $filename = time() . '_' . basename($_FILES['logo']['name']);
+        $targetPath = $uploadDir . $filename;
+
+        if (!move_uploaded_file($_FILES['logo']['tmp_name'], $targetPath)) {
+            json(['error' => 'Failed to upload file'], 500);
+        }
+
+        // Delete old logo if exists
+        if (!empty($company['logo'])) {
+            $oldLogoPath = __DIR__ . '/../' . $company['logo'];
+            if (file_exists($oldLogoPath)) {
+                unlink($oldLogoPath);
+            }
+        }
+
+        // Save new logo path
+        $data['logo'] = 'uploads/companies/' . $filename;
+    }
+
+    // No fields changed?
+    if (empty($data)) {
+        json(['error' => 'No data to update'], 400);
+    }
+
+    // Update in DB
+    $ok = $companyMgr->update($companyId, $data);
+
+    if ($ok) {
+        json([
+            'ok' => true,
+            'message' => 'Company updated successfully',
+            'company_id' => $companyId,
+            'updated_fields' => $data
+        ]);
+    } else {
+        json(['error' => 'Failed to update company'], 500);
+    }
+}
+
+
 // DELETE /banks/{id} — delete bank
 if (preg_match('#^/company/(\d+)$#', $path, $matches) && $method === 'DELETE') {
     $payload = getAuthPayload($auth);
@@ -127,7 +222,7 @@ if (preg_match('#^/company/(\d+)$#', $path, $matches) && $method === 'DELETE') {
 
     $companyId = (int) $matches[1];
     $company = $companyMgr->getById($companyId);
-    if (!$bank || !isset($company['created_by']) || $company['created_by'] !== $payload['sub']) {
+    if (!$company || !isset($company['created_by']) || $company['created_by'] !== $payload['sub']) {
         json(['error' => 'Company not found or unauthorized'], 404);
     }
 

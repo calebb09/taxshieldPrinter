@@ -145,7 +145,7 @@ if (preg_match('#^/clients/(\d+)$#', $path, $m) && $method === 'PUT') {
     $id = (int) $m[1];
 
     // Read JSON body
-    $input = json_decode(file_get_contents('php://input'), true);
+    $input = json_decode(file_get_contents('php://input'), associative: true);
     if (!$input) {
         json(['error' => 'invalid json'], 400);
     }

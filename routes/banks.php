@@ -118,31 +118,37 @@ if ($path === '/banks' && $method === 'POST') {
 }
 
 // PUT /banks/{id} — update bank
-if (preg_match('#^/banks/(\d+)$#', $path, $matches) && $method === 'PUT') {
-    // Using POST here because file uploads with PUT are tricky
+if (preg_match('#^/banks/(\d+)$#', $path, $matches) && $method === 'POST') {
     $bankId = (int) $matches[1];
 
+    // AUTH
     $payload = getAuthPayload($auth);
-    if (!$payload)
+    if (!$payload) {
         json(['error' => 'unauthorized'], 401);
+    }
 
-    $bank_name = $_POST['bank_name'] ?? null;
-    $bank_account = $_POST['bank_account'] ?? null;
-    $bank_routing = $_POST['bank_routing'] ?? null;
-
+    // Collect text fields
     $data = [];
-    if ($bank_name)
-        $data['bank_name'] = $bank_name;
-    if ($bank_account)
-        $data['bank_account'] = $bank_account;
-    if ($bank_routing)
-        $data['bank_routing'] = $bank_routing;
 
-    // Handle logo file upload if exists
+    if (!empty($_POST['bank_name'])) {
+        $data['bank_name'] = $_POST['bank_name'];
+    }
+
+    if (!empty($_POST['bank_account'])) {
+        $data['bank_account'] = $_POST['bank_account'];
+    }
+
+    if (!empty($_POST['bank_routing'])) {
+        $data['bank_routing'] = $_POST['bank_routing'];
+    }
+
+    // Handle file upload (logo)
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+
         $uploadDir = __DIR__ . '/../uploads/banks/';
-        if (!file_exists($uploadDir))
+        if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
+        }
 
         $filename = time() . '_' . basename($_FILES['logo']['name']);
         $targetPath = $uploadDir . $filename;
@@ -154,32 +160,43 @@ if (preg_match('#^/banks/(\d+)$#', $path, $matches) && $method === 'PUT') {
         $data['logo'] = 'uploads/banks/' . $filename;
     }
 
+    // No fields found?
     if (empty($data)) {
         json(['error' => 'No data to update'], 400);
     }
 
+    // Perform the update
     $ok = $banksMgr->update($bankId, $data);
 
     if ($ok) {
-        json(['ok' => true, 'message' => 'Bank updated', 'bank_id' => $bankId]);
+        json([
+            'ok' => true,
+            'message' => 'Bank updated successfully',
+            'bank_id' => $bankId,
+            'updated' => $data
+        ]);
     } else {
         json(['error' => 'Failed to update bank'], 500);
     }
 }
 
+
 // DELETE /banks/{id} — delete bank
+// DELETE /banks/{id}
 if (preg_match('#^/banks/(\d+)$#', $path, $matches) && $method === 'DELETE') {
+
     $payload = getAuthPayload($auth);
     if (!$payload)
         json(['error' => 'unauthorized'], 401);
 
     $bankId = (int) $matches[1];
+
     $bank = $banksMgr->getById($bankId);
-    if (!$bank || !isset($bank['created_by']) || $bank['created_by'] !== $payload['sub']) {
+    if (!$bank || $bank['created_by'] !== $payload['sub']) {
         json(['error' => 'Bank not found or unauthorized'], 404);
     }
 
-    // Delete associated logo file if it exists
+    // Delete bank logo
     if (!empty($bank['logo'])) {
         $fullPath = __DIR__ . '/../' . $bank['logo'];
         if (file_exists($fullPath)) {
@@ -187,6 +204,39 @@ if (preg_match('#^/banks/(\d+)$#', $path, $matches) && $method === 'DELETE') {
         }
     }
 
+    // Delete all companies linked to this bank
+    $companies = $companyMgr->getByBankId($bankId);
+
+    $deletedCompanies = 0;
+
+    foreach ($companies as $company) {
+
+        // Ensure $company is an array
+        if (!is_array($company))
+            continue;
+
+        $companyId = (int) $company['id'];
+
+        // Delete company logo
+        if (!empty($company['logo'])) {
+            $companyLogoPath = __DIR__ . '/../' . $company['logo'];
+            if (file_exists($companyLogoPath)) {
+                unlink($companyLogoPath);
+            }
+        }
+
+        // Delete company record
+        $companyMgr->delete($companyId);
+        $deletedCompanies++;
+    }
+
+    // Delete the bank last
     $banksMgr->delete($bankId);
-    json(['ok' => true, 'message' => 'Bank deleted']);
+
+    json([
+        'ok' => true,
+        'message' => 'Bank and related companies deleted successfully',
+        'deleted_bank_id' => $bankId,
+        'deleted_companies_count' => $deletedCompanies
+    ]);
 }

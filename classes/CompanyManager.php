@@ -27,16 +27,25 @@ class CompanyManager
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getByBankId($id)
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM companies WHERE bank_id = :id");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+
     // Create a new bank
     public function create($data, $created_by)
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO companies (logo, bank_id, address, phone, email, created_by) 
-            VALUES (:logo, :bankId, :address, :phone, :email, :created_by)
+            INSERT INTO companies (logo, bank_id, name, address, phone, email, created_by) 
+            VALUES (:logo, :bankId, :companyName, :address, :phone, :email, :created_by)
         ");
         $stmt->execute([
             ':logo' => $data['logo'],
             ':bankId' => $data['bankId'],
+            ':companyName' => $data['name'],
             ':address' => $data['address'],
             ':phone' => $data['phone'],
             ':email' => $data['email'],
@@ -52,6 +61,7 @@ class CompanyManager
             UPDATE companies SET 
                 logo = :logo,
                 bank_id = :bankId,
+                name = :companyName,
                 address = :address,
                 email = :email,
                 phone = :phone
@@ -60,6 +70,7 @@ class CompanyManager
         return $stmt->execute([
             ':logo' => $data['logo'] ?? '',
             ':bankId' => $data['bankId'] ?? '',
+            ':companyName' => $data['name'] ?? '',
             ':address' => $data['address'] ?? '',
             ':email' => $data['email'] ?? '',
             ':phone' => $data['phone'] ?? '',

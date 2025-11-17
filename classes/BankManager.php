@@ -47,21 +47,19 @@ class BankManager
     // Update an existing bank
     public function update($id, $data)
     {
-        $stmt = $this->pdo->prepare("
-            UPDATE banks SET 
-                logo = :logo,
-                bank_name = :bank_name,
-                bank_account = :bank_account,
-                bank_routing = :bank_routing
-            WHERE id = :id
-        ");
-        return $stmt->execute([
-            ':logo' => $data['logo'] ?? '',
-            ':bank_name' => $data['bank_name'] ?? '',
-            ':bank_account' => $data['bank_account'] ?? '',
-            ':bank_routing' => $data['bank_routing'] ?? '',
-            ':id' => $id
-        ]);
+        // Dynamically build SET part
+        $fields = [];
+        $params = [':id' => $id];
+
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
+            $params[":$key"] = $value;
+        }
+
+        $sql = "UPDATE banks SET " . implode(', ', $fields) . " WHERE id = :id";
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($params);
     }
 
     // Delete a bank

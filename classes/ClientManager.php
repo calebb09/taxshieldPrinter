@@ -55,7 +55,7 @@ class ClientManager
         // Minimal update example - extend as needed
         $fields = [];
         $params = [':id' => $id];
-        foreach (['first_name', 'last_name', 'email', 'mobile', 'street_number', 'Apartment', 'city', 'state', 'country', 'zip_code', 'ssn', 'fein', 'referral_source', 'gender', 'dob'] as $f) {
+        foreach (['first_name', 'last_name', 'email', 'mobile', 'street_number', 'Apartment', 'city', 'state', 'country', 'zip_code', 'ssn', 'fein', 'referral_source', 'gender', 'dob', 'payment_reason'] as $f) {
             if (isset($data[$f])) {
                 $fields[] = "$f = :$f";
                 $params[":$f"] = $data[$f];

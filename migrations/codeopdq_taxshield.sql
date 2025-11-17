@@ -189,6 +189,7 @@ CREATE TABLE `companies` (
     `id` int(11) NOT NULL,
     `bank_id` int(11) NOT NULL,
     `logo` varchar(100) NOT NULL,
+    `name` varchar(200) NOT NULL,
     `address` text NOT NULL,
     `phone` varchar(15) NOT NULL,
     `email` varchar(255) NOT NULL,
