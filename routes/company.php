@@ -37,7 +37,7 @@ if ($path === '/company' && $method === 'POST') {
     $phone = $_POST['phone'] ?? null;
     $email = $_POST['email'] ?? null;
 
-    if (empty($bankId) || empty($address) || empty($phone) || empty($email) || empty($companyTitle)) {
+    if (empty($bankId) || empty($address) || empty($phone) || empty($email)) {
         json(['error' => 'All fields are required'], 400);
     }
 
@@ -142,9 +142,9 @@ if (preg_match('#^/company/(\d+)$#', $path, $matches) && $method === 'POST') {
     // Collect fields to update
     $data = [];
 
-    if (!empty($_POST['name'])) {
-        $data['name'] = $_POST['name'];
-    }
+    // if (!empty($_POST['name'])) {
+    //     $data['name'] = $_POST['name'];
+    // }
 
     if (!empty($_POST['address'])) {
         $data['address'] = $_POST['address'];
