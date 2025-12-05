@@ -22,9 +22,22 @@ class CompanyManager
     // Get single bank by ID
     public function getById($id)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM companies WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->pdo->query("SELECT * FROM companies ORDER BY id DESC");
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Debug: Log count and sample data
+            error_log("Companies query: " . print_r($results, true));  // Check PHP error log
+
+            // Or return with extra info for testing
+            return [
+                'count' => count($results),
+                'data' => $results
+            ];
+        } catch (PDOException $e) {
+            error_log("DB Error in getAll: " . $e->getMessage());
+            return [];  // Fallback to empty
+        }
     }
 
     public function getByBankId($id)
@@ -39,8 +52,8 @@ class CompanyManager
     public function create($data, $created_by)
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO companies (logo, bank_id, name, address, phone, email, created_by) 
-            VALUES (:logo, :bankId, :companyName, :address, :phone, :email, :created_by)
+            INSERT INTO companies (logo, bank_id, name, address, phone, email, signature, created_by) 
+            VALUES (:logo, :bankId, :companyName, :address, :phone, :email, :signature, :created_by)
         ");
         $stmt->execute([
             ':logo' => $data['logo'],
@@ -49,6 +62,7 @@ class CompanyManager
             ':address' => $data['address'],
             ':phone' => $data['phone'],
             ':email' => $data['email'],
+            ':signature' => $data['signature'],
             ':created_by' => $created_by,
         ]);
         return $this->pdo->lastInsertId();
