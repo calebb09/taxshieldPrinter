@@ -23,17 +23,9 @@ class CompanyManager
     public function getById($id)
     {
         try {
-            $stmt = $this->pdo->query("SELECT * FROM companies ORDER BY id DESC");
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Debug: Log count and sample data
-            error_log("Companies query: " . print_r($results, true));  // Check PHP error log
-
-            // Or return with extra info for testing
-            return [
-                'count' => count($results),
-                'data' => $results
-            ];
+            $stmt = $this->pdo->prepare("SELECT * FROM companies WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("DB Error in getAll: " . $e->getMessage());
             return [];  // Fallback to empty
