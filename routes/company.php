@@ -105,9 +105,17 @@ if (preg_match('#^/company/(\d+)$#', $path, $matches) && $method === 'POST') {
     // Collect fields to update
     $data = [];
 
-    // if (!empty($_POST['name'])) {
-    //     $data['name'] = $_POST['name'];
-    // }
+    if (!empty($_POST['name'])) {
+        $data['name'] = $_POST['name'];
+    }
+
+    if (!empty($_POST['logo'])) {
+        $data['logo'] = $_POST['logo'];
+    }
+
+    if (!empty($_POST['signature'])) {
+        $data['signature'] = $_POST['signature'];
+    }
 
     if (!empty($_POST['address'])) {
         $data['address'] = $_POST['address'];

@@ -71,6 +71,7 @@ class CompanyManager
                 address = :address,
                 email = :email,
                 phone = :phone
+                signature = :signature
             WHERE id = :id
         ");
         return $stmt->execute([
@@ -80,6 +81,7 @@ class CompanyManager
             ':address' => $data['address'] ?? '',
             ':email' => $data['email'] ?? '',
             ':phone' => $data['phone'] ?? '',
+            ':signature' => $data['signature'] ?? '',
             ':id' => $id
         ]);
     }
