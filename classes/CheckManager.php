@@ -156,10 +156,10 @@ class CheckManager
         $total = (int) $countStmt->fetchColumn();
 
         // Get paginated + sorted data with joins for client and company details
-        // Assuming 'clients' and 'companies' tables have a 'name' field for population
         $sql = "SELECT 
                 checks.*,
-                clients.name AS client_name,
+                clients.first_name AS client_first_name,
+                clients.last_name AS client_last_name,
                 companies.name AS company_name
             FROM checks
             LEFT JOIN clients ON checks.client_id = clients.id
@@ -183,9 +183,11 @@ class CheckManager
         $data = array_map(function ($row) {
             $row['client_id'] = [
                 'id' => (int) $row['client_id'],
-                'name' => $row['client_name'] ?? null
+                'first_name' => $row['client_first_name'] ?? null,
+                'last_name' => $row['client_last_name'] ?? null,
+                'name' => trim(($row['client_first_name'] ?? '') . ' ' . ($row['client_last_name'] ?? ''))
             ];
-            unset($row['client_name']); // Clean up extra field
+            unset($row['client_first_name'], $row['client_last_name']); // Clean up extra fields
 
             $row['company_id'] = [
                 'id' => (int) $row['company_id'],
