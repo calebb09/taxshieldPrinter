@@ -124,40 +124,50 @@ class CheckManager
         $sort_by = 'id',
         $sort_order = 'DESC'
     ) {
-        $where = ["created_by = :userId"];
+        $where = ["checks.created_by = :userId"];
         $params = [":userId" => $userId];
 
         if ($status) {
-            $where[] = "status = :status";
+            $where[] = "checks.status = :status";
             $params[":status"] = $status;
         }
 
         if ($clientId) {
-            $where[] = "client_id = :clientId";
+            $where[] = "checks.client_id = :clientId";
             $params[":clientId"] = $clientId;
         }
 
         if ($from) {
-            $where[] = "DATE(created_at) >= :from";
+            $where[] = "DATE(checks.created_at) >= :from";
             $params[":from"] = $from;
         }
 
         if ($to) {
-            $where[] = "DATE(created_at) <= :to";
+            $where[] = "DATE(checks.created_at) <= :to";
             $params[":to"] = $to;
         }
 
         $whereSql = implode(" AND ", $where);
 
-        // Count total
-        $countStmt = $this->pdo->prepare("SELECT COUNT(*) FROM checks WHERE $whereSql");
+        // Count total (no joins needed for count)
+        $countSql = "SELECT COUNT(*) FROM checks WHERE $whereSql";
+        $countStmt = $this->pdo->prepare($countSql);
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
-        // Get paginated + sorted data
-        $sql = "SELECT * FROM checks WHERE $whereSql
-            ORDER BY $sort_by $sort_order
+        // Get paginated + sorted data with joins for client and company details
+        // Assuming 'clients' and 'companies' tables have a 'name' field for population
+        $sql = "SELECT 
+                checks.*,
+                clients.name AS client_name,
+                companies.name AS company_name
+            FROM checks
+            LEFT JOIN clients ON checks.client_id = clients.id
+            LEFT JOIN companies ON checks.company_id = companies.id
+            WHERE $whereSql
+            ORDER BY checks.$sort_by $sort_order
             LIMIT :limit OFFSET :offset";
+
         $stmt = $this->pdo->prepare($sql);
 
         foreach ($params as $key => $val) {
@@ -167,10 +177,35 @@ class CheckManager
         $stmt->bindValue(":offset", (int) $offset, PDO::PARAM_INT);
 
         $stmt->execute();
+        $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Transform data to populate client_id and company_id as objects
+        $data = array_map(function ($row) {
+            $row['client_id'] = [
+                'id' => (int) $row['client_id'],
+                'name' => $row['client_name'] ?? null
+            ];
+            unset($row['client_name']); // Clean up extra field
+
+            $row['company_id'] = [
+                'id' => (int) $row['company_id'],
+                'name' => $row['company_name'] ?? null
+            ];
+            unset($row['company_name']); // Clean up extra field
+
+            // Ensure amount is numeric
+            $row['amount'] = (float) $row['amount'];
+
+            // Ensure IDs are integers where appropriate
+            $row['id'] = (int) $row['id'];
+            $row['created_by'] = (int) $row['created_by'];
+
+            return $row;
+        }, $rawData);
 
         return [
             'total' => $total,
-            'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+            'data' => $data
         ];
     }
 
